@@ -9,6 +9,7 @@ var expect = require('expect');
 var vfs = require('../');
 
 var cleanup = require('./utils/cleanup');
+var isWindows = require('./utils/is-windows');
 var testStreams = require('./utils/test-streams');
 var testConstants = require('./utils/test-constants');
 
@@ -30,7 +31,7 @@ var content = testConstants.content;
 
 var clean = cleanup(base);
 
-describe('integrations', function() {
+describe.only('integrations', function() {
 
   beforeEach(clean);
   afterEach(clean);
@@ -57,7 +58,11 @@ describe('integrations', function() {
     ], done);
   });
 
-  it.only('something something symlink directory', function(done) {
+  it('(*nix) sources a directory, creates a symlink and copies the symlink', function(done) {
+    if (isWindows) {
+      this.skip();
+      return;
+    }
 
     function assert(files) {
       var symlinkResult = fs.readlinkSync(outputSymlink);
@@ -65,6 +70,32 @@ describe('integrations', function() {
 
       expect(symlinkResult).toEqual(inputDirpath);
       expect(destResult).toEqual(inputDirpath);
+      expect(files[0].symlink).toEqual(inputDirpath);
+    }
+
+    pipe([
+      vfs.src(inputDirpath),
+      vfs.symlink(symlinkDirpath),
+      vfs.dest(outputDirpath),
+      concat(assert),
+    ], done);
+  });
+
+  it('(windows) sources a directory, creates a junction and copies the junction', function(done) {
+    if (!isWindows) {
+      this.skip();
+      return;
+    }
+
+    function assert(files) {
+      // Junctions add an ending separator
+      var expected = inputDirpath + path.sep;
+      var symlinkResult = fs.readlinkSync(outputSymlink);
+      var destResult = fs.readlinkSync(outputDirpathSymlink);
+
+      expect(symlinkResult).toEqual(expected);
+      expect(destResult).toEqual(expected);
+      expect(files[0].symlink).toEqual(inputDirpath);
     }
 
     pipe([
