@@ -8,6 +8,7 @@ var expect = require('expect');
 var miss = require('mississippi');
 
 var vfs = require('../');
+var constants = require('../lib/constants');
 
 var cleanup = require('./utils/cleanup');
 var statMode = require('./utils/stat-mode');
@@ -564,8 +565,8 @@ describe('symlink stream', function() {
 
     function assert(files) {
       expect(statMode(outputDirpath)).toEqual(dirMode);
-      // TODO: the file doesn't actually get the mode updated
-      expect(files[0].stat.mode).toEqual(fileMode);
+      // TODO: Helper??
+      expect(files[0].stat.mode & constants.MASK_MODE).toEqual(fileMode);
     }
 
     pipe([
