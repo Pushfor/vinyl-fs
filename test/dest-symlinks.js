@@ -59,6 +59,28 @@ describe('.dest() with symlinks', function() {
     ], done);
   });
 
+  it('emits Vinyl files that are symbolic', function(done) {
+    var file = new File({
+      base: inputBase,
+      path: inputPath,
+      contents: null,
+    });
+
+    // `src()` adds this side-effect with `resolveSymlinks` option set to false
+    file.symlink = inputPath;
+
+    function assert(files) {
+      expect(files.length).toEqual(1);
+      expect(files[0].isSymbolic()).toEqual(true);
+    }
+
+    pipe([
+      from.obj([file]),
+      vfs.dest(outputBase),
+      concat(assert),
+    ], done);
+  });
+
   it('can create relative links', function(done) {
     var file = new File({
       base: inputBase,

@@ -31,7 +31,7 @@ var content = testConstants.content;
 
 var clean = cleanup(base);
 
-describe.only('integrations', function() {
+describe('integrations', function() {
 
   beforeEach(clean);
   afterEach(clean);
